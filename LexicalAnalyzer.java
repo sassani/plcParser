@@ -66,7 +66,6 @@ public class LexicalAnalyzer {
     }
 
     private int lookup(char ch) {
-        // int nextToken;
         switch (ch) {
             case '=':
                 addChar();
@@ -82,17 +81,23 @@ public class LexicalAnalyzer {
                 break;
             case '+':
                 readExtraChar();
-                if (nextChar2 == '+'){
+                if (nextChar2 == '+') {
                     addExtraChar();
                     nextToken = Constants.INCRE_OP;
-                }else{
+                } else {
                     addChar();
                     nextToken = Constants.ADD_OP;
                 }
                 break;
             case '-':
-                addChar();
-                nextToken = Constants.SUB_OP;
+                readExtraChar();
+                if (nextChar2 == '-') {
+                    addExtraChar();
+                    nextToken = Constants.DECRE_OP;
+                } else {
+                    addChar();
+                    nextToken = Constants.SUB_OP;
+                }
                 break;
             case '*':
                 addChar();
@@ -113,6 +118,32 @@ public class LexicalAnalyzer {
             case ';':
                 addChar();
                 nextToken = Constants.SEMICOLON;
+                break;
+            case '%':
+                addChar();
+                nextToken = Constants.MODUL_OP;
+                break;
+            case '!':
+                addChar();
+                nextToken = Constants.LGNOT_OP;
+                break;
+            case '&':
+                readExtraChar();
+                if (nextChar2 == '&') {
+                    addExtraChar();
+                    nextToken = Constants.LGAND_OP;
+                } else {
+                    throw new InvaliSyntaxSymbolException("missing '&'", null);
+                }
+                break;
+            case '|':
+                readExtraChar();
+                if (nextChar2 == '|') {
+                    addExtraChar();
+                    nextToken = Constants.LGOR_OP;
+                } else {
+                    throw new InvaliSyntaxSymbolException("missing '|'", null);
+                }
                 break;
             default:
                 addChar();
@@ -183,7 +214,7 @@ public class LexicalAnalyzer {
             } catch (IOException e) {
                 System.out.println("File error");
             }
-        }else{
+        } else {
 
             nextChar = nextChar2;
             nextChar2 = '\0';
