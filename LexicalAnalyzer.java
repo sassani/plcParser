@@ -14,6 +14,7 @@ public class LexicalAnalyzer {
     private char nextChar2 = '\0';
     private BufferedReader bufferedReader;
     private int nextToken;
+    private int identClass;
     // // #endregion
 
     public LexicalAnalyzer(String fileName) {
@@ -31,17 +32,9 @@ public class LexicalAnalyzer {
         removeBlankOrNewLine();
         switch (charClass) {
             /* Parse identifiers */
-            case Constants.LETTER:
-                addChar();
-                getChar();
-                while (charClass == Constants.LETTER || charClass == Constants.DIGIT) {
-                    addChar();
-                    getChar();
-                }
-                nextToken = Constants.IDENT;
-                lookupResWord(lexeme.toString());
+            case Constants.IDENT:
+                identifierTokenizerPerl();
                 break;
-            /* Parse integer literals */
             case Constants.DIGIT:
                 addChar();
                 getChar();
@@ -60,9 +53,36 @@ public class LexicalAnalyzer {
             case Constants.EOF:
                 nextToken = Constants.EOF;
                 break;
+            default:
+                throw new InvaliSyntaxSymbolException("Invalid character");
         } /* End of switch */
         System.out.printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
         return nextToken;
+    }
+
+    /**
+     * A method to create an identifier token in perl style
+     * https://perldoc.perl.org/perlintro
+     */
+    private void identifierTokenizerPerl() {
+        int maxSize = 251;
+        addChar();
+        getChar();
+        if (isValidIdentifierCharInPerl(nextChar)) {
+            addChar();
+            getChar();
+            while (charClass == Constants.LETTER || charClass == Constants.DIGIT
+                    || isValidIdentifierCharInPerl(nextChar)) {
+                if (lexeme.length() > maxSize + 1)
+                    throw new InvaliSyntaxSymbolException("Too long name. Maximum length: " + maxSize);
+                addChar();
+                getChar();
+            }
+            nextToken = identClass;
+            lookupResWord(lexeme.toString());
+        } else {
+            throw new InvaliSyntaxSymbolException("needs to have an alphabet  or _ after identifier symbol");
+        }
     }
 
     private int lookup(char ch) {
@@ -133,7 +153,7 @@ public class LexicalAnalyzer {
                     addExtraChar();
                     nextToken = Constants.LGAND_OP;
                 } else {
-                    throw new InvaliSyntaxSymbolException("missing '&'", null);
+                    throw new InvaliSyntaxSymbolException("missing '&'");
                 }
                 break;
             case '|':
@@ -142,7 +162,7 @@ public class LexicalAnalyzer {
                     addExtraChar();
                     nextToken = Constants.LGOR_OP;
                 } else {
-                    throw new InvaliSyntaxSymbolException("missing '|'", null);
+                    throw new InvaliSyntaxSymbolException("missing '|'");
                 }
                 break;
             default:
@@ -189,7 +209,6 @@ public class LexicalAnalyzer {
 
     private void readExtraChar() {
         try {
-
             nextChar2 = (char) bufferedReader.read();
         } catch (Exception e) {
 
@@ -202,7 +221,16 @@ public class LexicalAnalyzer {
                 nextChar = (char) bufferedReader.read();
                 if (nextChar == -1)
                     charClass = Constants.EOF;
-                else {
+                else if (nextChar == '$') {
+                    charClass = Constants.IDENT;
+                    identClass = Constants.IDENT_SCL;
+                } else if (nextChar == '%') {
+                    charClass = Constants.IDENT;
+                    identClass = Constants.IDENT_MAP;
+                } else if (nextChar == '@') {
+                    charClass = Constants.IDENT;
+                    identClass = Constants.IDENT_ARR;
+                } else {
                     if (isAlpha(nextChar))
                         charClass = Constants.LETTER;
                     else if (isDigit(nextChar))
@@ -230,6 +258,10 @@ public class LexicalAnalyzer {
 
     private boolean isAlpha(char c) {
         return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+    }
+
+    private boolean isValidIdentifierCharInPerl(char c) {
+        return (isAlpha(c) || c == '_');
     }
 
     private boolean isDigit(char c) {

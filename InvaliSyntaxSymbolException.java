@@ -1,8 +1,8 @@
 public class InvaliSyntaxSymbolException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     
-    public InvaliSyntaxSymbolException(String errorMessage, Throwable err) {
+    public InvaliSyntaxSymbolException(String errorMessage) {
         // String message = "Syntax Error:\n";
-        super("Syntax Error:\n" + errorMessage, err);
+        super("\n\rSyntax Error:\n" + errorMessage);
     }
 }

@@ -4,6 +4,9 @@ public class Constants {
         public static final int EOF = -1;
         public static final int LETTER = 0;
         public static final int DIGIT = 1;
+        public static final int IDENT_SCL = 2;
+        public static final int IDENT_MAP = 3;
+        public static final int IDENT_ARR = 4;
         public static final int UNKNOWN = 99;
     
         /* Token codes */
