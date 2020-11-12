@@ -9,10 +9,15 @@ public class Constants {
         public static final int IDENT_ARR = 4;
         public static final int UNKNOWN = 99;
     
-        /* Token codes */
-        public static final int INT_LIT = 10;
-        public static final int IDENT = 11;
+        /** Token codes */
+        /* Literals codes */
+        public static final int IDENT = 10;
+        public static final int INT_LIT = 11;       // integer literals
+        public static final int FLP_LIT = 12;       // floating point literals
+        public static final int CHR_LIT = 13;       // character literals
+        public static final int STR_LIT = 14;       // string literals
     
+        /* Operation codes */
         public static final int ASSIGN_OP = 20;     // =
         public static final int ADD_OP = 21;        // +
         public static final int SUB_OP = 22;        // -
@@ -32,7 +37,7 @@ public class Constants {
         public static final int LGOR_OP = 36;       // ||
         public static final int SEMICOLON = 49;     // ;
     
-        /** Reserved Keywords */
+        /* Reserved Keywords */
         public static final int WHILE_CODE = 50;
         public static final int IF_CODE = 51;
         public static final int ELSE_CODE = 52;
