@@ -7,14 +7,15 @@ public class Constants {
         public static final int IDENT_SCL = 2;
         public static final int IDENT_MAP = 3;
         public static final int IDENT_ARR = 4;
+        public static final int LITERAL_NUM = 5;
+        public static final int LITERAL_INT = 6;       // integer literals
+        public static final int LITERAL_FLP = 7;       // floating point literals
+        public static final int LITERAL_CHR = 8;       // character literals
         public static final int UNKNOWN = 99;
     
         /** Token codes */
         /* Literals codes */
         public static final int IDENT = 10;
-        public static final int INT_LIT = 11;       // integer literals
-        public static final int FLP_LIT = 12;       // floating point literals
-        public static final int CHR_LIT = 13;       // character literals
         public static final int STR_LIT = 14;       // string literals
     
         /* Operation codes */
