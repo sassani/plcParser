@@ -117,7 +117,7 @@ public class Parser {
         System.out.println("Enter <factor>");
         lex();
         /* Determine which RHS */
-        if (nextToken == Constants.IDENT || nextToken == Constants.LITERAL_INT) {
+        if (nextToken == Constants.IDENT || nextToken == Constants.LITERAL_INT_DEC) {
             /* Get the next token */
             lex();
 

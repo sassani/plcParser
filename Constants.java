@@ -8,14 +8,17 @@ public class Constants {
         public static final int IDENT_MAP = 3;
         public static final int IDENT_ARR = 4;
         public static final int LITERAL_NUM = 5;
-        public static final int LITERAL_INT = 6;       // integer literals
-        public static final int LITERAL_FLP = 7;       // floating point literals
-        public static final int LITERAL_CHR = 8;       // character literals
+        public static final int LITERAL_INT_DEC = 6;    // decimal integer literals
+        public static final int LITERAL_INT_BIN = 7;    // binary integer literals
+        public static final int LITERAL_INT_OCT = 8;    // octal integer literals
+        public static final int LITERAL_INT_HEX = 9;    // hexadecimal integer literals
+        public static final int LITERAL_FLP = 10;       // floating point literals
+        public static final int LITERAL_CHR = 12;       // character literals
         public static final int UNKNOWN = 99;
     
         /** Token codes */
         /* Literals codes */
-        public static final int IDENT = 10;
+        public static final int IDENT = 100;
         public static final int STR_LIT = 14;       // string literals
     
         /* Operation codes */
