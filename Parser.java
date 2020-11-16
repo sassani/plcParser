@@ -50,7 +50,7 @@ public class Parser {
     }
 
     /**
-     * <if_stmt> --> if ‘(’ <bool_expr>  ‘)’ <block> [else <block>]
+     * <if_stmt> --> if ‘(’ <bool_expr> ‘)’ <block> [else <block>]
      */
     private void ifStmt() {
         System.out.println("Enter <if>");
@@ -63,8 +63,10 @@ public class Parser {
             throw new java.lang.IllegalArgumentException("Missing ')'");
         block();
         lex();
-        if(nextToken==Constants.ELSE_CODE){
+        if (nextToken == Constants.ELSE_CODE) {
+            System.out.println("Enter <else>");
             block();
+            System.out.println("Exit <else>");
         }
 
         System.out.println("Exit <if>");
