@@ -16,7 +16,7 @@ public class TokenSpecifierRegex {
         tokenPatterns.put(Constants.LITERAL_FLP_HEX,
                 "^(0[xX]){1}(([A-Fa-f\\d]+\\.{1}|[A-Fa-f\\d]*\\.{1}[A-Fa-f\\d]+){1}([pP]{1}[-+]?\\d)?|[A-Fa-f\\d]+([pP]{1}[-+]?\\d){1})[fFlL]?$");
         tokenPatterns.put(Constants.LITERAL_FLP_DEC,
-                "^(0[xX]){1}((\\d+\\.{1}|\\d*\\.{1}\\d+){1}([pP]{1}[-+]?\\d)?|\\d+([pP]{1}[-+]?\\d){1})[fFlL]?$");
+                "^(0[xX]){1}((\\d+\\.{1}|\\d*\\.{1}\\d+){1}([eE]{1}[-+]?\\d)?|\\d+([eE]{1}[-+]?\\d){1})[fFlL]?$");
 
     }
 
@@ -45,6 +45,5 @@ public class TokenSpecifierRegex {
         for (String string : testLiterals) {
             System.out.println("token of " + string + "\tis\t" + lar.getNumberClass(string));
         }
-        // System.out.println(lar.checkLiteralPattern("0xa3", 11));
     }
 }

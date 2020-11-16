@@ -16,7 +16,7 @@ public class Constants {
         public static final int LITERAL_FLP_DEC = 10;   // floating point literals
         public static final int LITERAL_FLP_HEX = 11;   // floating point literals
         public static final int LITERAL_CHR = 12;       // character literals
-        public static final int STR_LIT = 14;           // string literals
+        public static final int LITERAL_STR = 14;       // string literals
         public static final int UNKNOWN = 99;
     
         /** Token codes */

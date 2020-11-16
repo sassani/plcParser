@@ -51,7 +51,11 @@ public class LexicalAnalyzer {
             case Constants.LITERAL_NUM:
                 literalNumTokenizer();
                 break;
-            /* Parentheses and operators */
+            /* Parse strings */
+            case Constants.LITERAL_STR:
+                literalStrTokenizer();
+                break;
+            // 
             case Constants.UNKNOWN:
                 lookup();
                 getChar();
@@ -86,6 +90,15 @@ public class LexicalAnalyzer {
         } else {
             sendError("needs to have an alphabet  or _ after identifier symbol");
         }
+    }
+
+    private void literalStrTokenizer(){
+        getChar();
+        while (nextChar != '"') {
+            addGetChar();
+        }
+        getChar();
+        nextToken = Constants.LITERAL_STR;
     }
 
     private void literalNumTokenizer() {
@@ -250,6 +263,8 @@ public class LexicalAnalyzer {
                 charClass = Constants.IDENT;
             else if (isLiteralNumFlag())
                 charClass = Constants.LITERAL_NUM;
+            else if (isLiteralStringFlag())
+                charClass = Constants.LITERAL_STR;
             else {
                 if (isNoneDigit())
                     charClass = Constants.LETTER;
@@ -296,6 +311,10 @@ public class LexicalAnalyzer {
 
     private boolean isNewline() {
         return (nextChar == '\r' || nextChar == '\n');
+    }
+
+    private boolean isLiteralStringFlag() {
+        return (nextChar == '"');
     }
 
     private boolean isValidNumericChar() {
