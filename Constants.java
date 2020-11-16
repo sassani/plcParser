@@ -7,16 +7,34 @@ public class Constants {
         public static final int IDENT_SCL = 2;
         public static final int IDENT_MAP = 3;
         public static final int IDENT_ARR = 4;
+
         public static final int LITERAL_NUM = 5;
         public static final int LITERAL_INT_DEC = 6;    // decimal integer literals
         public static final int LITERAL_INT_BIN = 7;    // binary integer literals
         public static final int LITERAL_INT_OCT = 8;    // octal integer literals
         public static final int LITERAL_INT_HEX = 9;    // hexadecimal integer literals
-        
         public static final int LITERAL_FLP_DEC = 10;   // floating point literals
         public static final int LITERAL_FLP_HEX = 11;   // floating point literals
-        public static final int LITERAL_CHR = 12;       // character literals
-        public static final int LITERAL_STR = 14;       // string literals
+        
+        public static final int LITERAL_STR = 12;       // string literals
+        
+        public static final int LITERAL_CHR = 13;           // character literals general
+        public static final int LITERAL_CHR_PLN = 14;       // character literals plain
+        public static final int LITERAL_CHR_UNI = 15;       // character literals universal
+        public static final int LITERAL_CHR_SCP_BKS = 160;  // character literals escape for backslash charachter
+        public static final int LITERAL_CHR_SCP_SGQ = 161;  // character literals escape for single qoute charachter
+        public static final int LITERAL_CHR_SCP_DBQ = 162;  // character literals escape for double qoute charachter
+        public static final int LITERAL_CHR_SCP_QSM = 163;  // character literals escape for question mark
+        public static final int LITERAL_CHR_SCP_ALT = 164;  // character literals escape for alert or bell
+        public static final int LITERAL_CHR_SCP_BCS = 165;  // character literals escape for backspace
+        public static final int LITERAL_CHR_SCP_FRF = 166;  // character literals escape for form feed
+        public static final int LITERAL_CHR_SCP_NWL = 167;  // character literals escape for new line
+        public static final int LITERAL_CHR_SCP_CGR = 168;  // character literals escape for carriage return
+        public static final int LITERAL_CHR_SCP_HRT = 169;  // character literals escape for horizental tab
+        public static final int LITERAL_CHR_SCP_VRT = 170;  // character literals escape for vertical tab
+        public static final int LITERAL_CHR_SCP_OCT = 171;  // character literals escape for octal number
+        public static final int LITERAL_CHR_SCP_HEX = 172;  // character literals escape for hexadecimal number
+
         public static final int UNKNOWN = 99;
     
         /** Token codes */

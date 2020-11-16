@@ -55,7 +55,11 @@ public class LexicalAnalyzer {
             case Constants.LITERAL_STR:
                 literalStrTokenizer();
                 break;
-            // 
+            /* Parse charachter */
+            case Constants.LITERAL_CHR:
+                literalChrTokenizer();
+                break;
+            //
             case Constants.UNKNOWN:
                 lookup();
                 getChar();
@@ -92,21 +96,137 @@ public class LexicalAnalyzer {
         }
     }
 
-    private void literalStrTokenizer(){
+    /**
+     * reference:
+     * https://docs.microsoft.com/en-us/cpp/c-language/c-character-constants?view=msvc-160
+     */
+    private void literalChrTokenizer() {
+        getChar();
+        if (nextChar == '\\') {
+            addGetChar();
+            // addChar();
+            switch (nextChar) {
+                case '\\':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_BKS;
+                    break;
+                case '\"':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_DBQ;
+                    break;
+                case '\'':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_SGQ;
+                    break;
+                case '?':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_QSM;
+                    break;
+                case 'a':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_ALT;
+                    break;
+                case 'b':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_BCS;
+                    break;
+                case 'f':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_FRF;
+                    break;
+                case 'n':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_NWL;
+                    break;
+                case 'r':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_CGR;
+                    break;
+                case 't':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_HRT;
+                    break;
+                case 'v':
+                    addGetChar();
+                    nextToken = Constants.LITERAL_CHR_SCP_VRT;
+                    break;
+                case '0':
+                    addGetChar();
+                    while (nextChar != '\'') {
+                        if (nextChar == '￿')// check for closing ' to avoid infinit loop
+                            sendError("Missing \' char");
+                        addGetChar();
+                    }
+                    nextToken = Constants.LITERAL_CHR_SCP_OCT;
+                    break;
+                case 'x':
+                    addGetChar();
+                    while (nextChar != '\'') {
+                        if (nextChar == '￿')// check for closing ' to avoid infinit loop
+                            sendError("Missing \' char");
+                        addGetChar();
+                    }
+                    nextToken = Constants.LITERAL_CHR_SCP_HEX;
+                    break;
+                case 'u':
+                    addGetChar();
+                    while (nextChar != '\'') {
+                        if (nextChar == '￿')// check for closing ' to avoid infinit loop
+                            sendError("Missing \' char");
+                        addGetChar();
+                    }
+                    nextToken = Constants.LITERAL_CHR_UNI;
+                    break;
+
+                default:
+                    sendError("invalid character in scape sequenc");
+                    break;
+            }
+            // addGetChar();
+            if (nextChar != '\'')
+                sendError("Missing \' character");
+
+        } else {
+            addGetChar();
+            if (nextChar != '\'')
+                sendInvalidCharacterError();
+            nextToken = Constants.LITERAL_CHR_PLN;
+        }
+        getChar();
+
+        // getChar();
+        // removeBlankOrNewLine();
+        // if (nextChar == '+') {// check concatenation between strings
+        // getChar();
+        // removeBlankOrNewLine();
+        // if (isLiteralStringFlag())
+        // literalStrTokenizer();
+        // }
+    }
+
+    private void literalStrTokenizer() {
         getChar();
         while (nextChar != '"') {
             addGetChar();
+            if (nextChar == '￿')// check for closing " to avoid infinit loop
+                sendError("Missing \" char");
         }
         getChar();
+        removeBlankOrNewLine();
+        if (nextChar == '+') {// check concatenation between strings
+            getChar();
+            removeBlankOrNewLine();
+            if (isLiteralStringFlag())
+                literalStrTokenizer();
+        }
         nextToken = Constants.LITERAL_STR;
     }
 
     private void literalNumTokenizer() {
         addGetChar();
-        while (isValidNumericChar() || nextChar == '.') {
+        while (isValidNumericChar() || nextChar == '.') {// consider all valid charachters in numerical literals
             addGetChar();
         }
-
         nextToken = tokenSpecifier.getNumberClass(lexeme.toString());
 
     }
@@ -265,6 +385,8 @@ public class LexicalAnalyzer {
                 charClass = Constants.LITERAL_NUM;
             else if (isLiteralStringFlag())
                 charClass = Constants.LITERAL_STR;
+            else if (isLiteralCharFlag())
+                charClass = Constants.LITERAL_CHR;
             else {
                 if (isNoneDigit())
                     charClass = Constants.LETTER;
@@ -281,6 +403,14 @@ public class LexicalAnalyzer {
 
     private boolean isLiteralNumFlag() {
         return (isDigit() || nextChar == '.');
+    }
+
+    private boolean isLiteralStringFlag() {
+        return (nextChar == '"');
+    }
+
+    private boolean isLiteralCharFlag() {
+        return (nextChar == '\'');
     }
 
     private boolean isIdentFlag() {
@@ -311,10 +441,6 @@ public class LexicalAnalyzer {
 
     private boolean isNewline() {
         return (nextChar == '\r' || nextChar == '\n');
-    }
-
-    private boolean isLiteralStringFlag() {
-        return (nextChar == '"');
     }
 
     private boolean isValidNumericChar() {
