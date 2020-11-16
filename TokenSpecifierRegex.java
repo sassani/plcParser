@@ -15,6 +15,8 @@ public class TokenSpecifierRegex {
         tokenPatterns.put(Constants.LITERAL_INT_OCT, "^0[0-7]*" + integerSuffix + "?$");
         tokenPatterns.put(Constants.LITERAL_FLP_HEX,
                 "^(0[xX]){1}(([A-Fa-f\\d]+\\.{1}|[A-Fa-f\\d]*\\.{1}[A-Fa-f\\d]+){1}([pP]{1}[-+]?\\d)?|[A-Fa-f\\d]+([pP]{1}[-+]?\\d){1})[fFlL]?$");
+        tokenPatterns.put(Constants.LITERAL_FLP_DEC,
+                "^(0[xX]){1}((\\d+\\.{1}|\\d*\\.{1}\\d+){1}([pP]{1}[-+]?\\d)?|\\d+([pP]{1}[-+]?\\d){1})[fFlL]?$");
 
     }
 
@@ -39,7 +41,7 @@ public class TokenSpecifierRegex {
 
     public static void main(String[] args) {
         TokenSpecifierRegex lar = new TokenSpecifierRegex();
-        String[] testLiterals = { "0xa3", "0xa", "0xa.", "0x.af", "0", "123", "0b0101", "023", "0b102", "0345u" };
+        String[] testLiterals = { "0xa3", "0xa", "0xa.", "0x.af", "0", "123", "0b0101", "023", "0b102", "0345u", "0x34", "0x.34" };
         for (String string : testLiterals) {
             System.out.println("token of " + string + "\tis\t" + lar.getNumberClass(string));
         }

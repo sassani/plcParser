@@ -6,8 +6,8 @@ import java.io.IOException;
 
 /** a lexical analyzer system for simple arithmetic expressions */
 public class LexicalAnalyzer {
-    // #region Global declarations
-    /* Variables */
+    // Global declarations
+    private TokenSpecifierRegex tokenSpecifier;
     private int charClass;
     private StringBuilder lexeme = new StringBuilder();
     private char nextChar = ' ';
@@ -15,16 +15,15 @@ public class LexicalAnalyzer {
     private BufferedReader bufferedReader;
     private int nextToken;
     private int identClass;
-    private int literalClass;
     private int rowNum;
     private int colNum;
-    // // #endregion
 
     public LexicalAnalyzer(String fileName) {
         try {
             File f = new File(fileName);
             FileReader fr = new FileReader(f);
             bufferedReader = new BufferedReader(fr);
+            tokenSpecifier = new TokenSpecifierRegex();
         } catch (IOException e) {
             System.out.println("Invalid file path");
         }
@@ -34,19 +33,23 @@ public class LexicalAnalyzer {
         lexeme.setLength(0);
         removeBlankOrNewLine();
         switch (charClass) {
+            /* Parse keywords */
+            case Constants.LETTER:
+                addChar();
+                getChar();
+                while (charClass == Constants.LETTER || charClass == Constants.DIGIT) {
+                    addChar();
+                    getChar();
+                }
+                lookupResWord(lexeme.toString());
+                break;
             /* Parse identifiers */
             case Constants.IDENT:
                 identifierTokenizerPerl();
                 break;
+            /* Parse numbers */
             case Constants.LITERAL_NUM:
                 literalNumTokenizer();
-                break;
-            case Constants.DIGIT:
-                addGetChar();
-                while (charClass == Constants.DIGIT) {
-                    addGetChar();
-                }
-                nextToken = Constants.LITERAL_INT_DEC;
                 break;
             /* Parentheses and operators */
             case Constants.UNKNOWN:
@@ -56,12 +59,12 @@ public class LexicalAnalyzer {
             /* EOF */
             case Constants.EOF:
                 nextToken = Constants.EOF;
+                addChar();
                 break;
             default:
-                sendError("Invalid character (" + nextChar + ")");
+                sendInvalidCharacterError();
         } /* End of switch */
         System.out.printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
-        literalClass = Constants.UNKNOWN;// reset literal class for next literal generation
         return nextToken;
     }
 
@@ -80,75 +83,24 @@ public class LexicalAnalyzer {
                 addGetChar();
             }
             nextToken = identClass;
-            lookupResWord(lexeme.toString());
         } else {
             sendError("needs to have an alphabet  or _ after identifier symbol");
         }
     }
 
     private void literalNumTokenizer() {
-        if (nextChar == '.') {// this must be floating point literal
+        addGetChar();
+        while (isValidNumericChar() || nextChar == '.') {
             addGetChar();
-            while (isDigit()) {
-                addGetChar();
-            }
-            if (isExponent()) {
-                addGetChar();
-                if (isDigit()) {
-                    getDigitSequence();
-                    if (isFloatingSuffix() || isNewlineOrSpace()) {
-                        addGetChar();
-                    } else {
-                        sendError("only f Or F or l or L is valid after exponent number");
-                    }
-                } else if (isSign()) {
-                    addGetChar();
-                    if (isDigit()) {
-                        getDigitSequence();
-                    } else {
-                        sendError("needs to have number after sign");
-                    }
-                    if (isFloatingSuffix())
-                        addGetChar();
-                } else {
-                    sendError("needs to have number or sign after exponent");
-                }
-            }
-            nextToken = Constants.LITERAL_FLP;
-
-        } else if (isNoneZeroDigit()) {
-            getDigitSequence();
-            nextToken = Constants.LITERAL_INT_DEC;
         }
+
+        nextToken = tokenSpecifier.getNumberClass(lexeme.toString());
 
     }
 
     private void addGetChar() {
         addChar();
         getChar();
-    }
-
-    private void getDigitSequence() {
-        addGetChar();
-        while (isDigit()) {
-            addGetChar();
-        }
-    }
-
-    /**
-     * A method to create a Floating-Point token in C style
-     * https://docs.microsoft.com/en-us/cpp/c-language/lexical-grammar?view=msvc-160
-     */
-    private void integerTokenizer() {
-
-    }
-
-    /**
-     * A method to create a Floating-Point token in C style
-     * https://docs.microsoft.com/en-us/cpp/c-language/lexical-grammar?view=msvc-160
-     */
-    private void floatingPointTokenizer() {
-
     }
 
     private int lookup() {
@@ -231,15 +183,17 @@ public class LexicalAnalyzer {
                     sendError("missing '|'");
                 }
                 break;
-            default:
+            case '￿':
                 addChar();
                 nextToken = Constants.EOF;
+                break;
+            default:
                 break;
         }
         return nextToken;
     }
 
-    private int lookupResWord(String word) {
+    private void lookupResWord(String word) {
         switch (word) {
             case "while":
                 nextToken = Constants.WHILE_CODE;
@@ -257,9 +211,9 @@ public class LexicalAnalyzer {
                 nextToken = Constants.FALSE_CODE;
                 break;
             default:
+                sendError("Invalid reserved word (" + word + ")");
                 break;
         }
-        return nextToken;
     }
 
     private void addChar() {
@@ -282,36 +236,35 @@ public class LexicalAnalyzer {
     }
 
     private void getChar() {
-        if (nextNextChar == '\0') {
-            try {
+        try {
+            if (nextNextChar == '\0') {
                 nextChar = (char) bufferedReader.read();
-                colNum++;
-                if (nextChar == -1)
-                    charClass = Constants.EOF;
-                else if (isIdentFlag())
-                    charClass = Constants.IDENT;
-                else if (isLiteralNumFlag(nextChar))
-                    charClass = Constants.LITERAL_NUM;
-                else {
-                    if (isNoneDigit())
-                        charClass = Constants.LETTER;
-                    else if (isDigit())
-                        charClass = Constants.DIGIT;
-                    else
-                        charClass = Constants.UNKNOWN;
-                }
-
-            } catch (IOException e) {
-                System.out.println("File error");
+            } else {
+                nextChar = nextNextChar;
+                nextNextChar = '\0';
             }
-        } else {
-            nextChar = nextNextChar;
-            nextNextChar = '\0';
+            colNum++;
+            if (nextChar == '￿')
+                charClass = Constants.EOF;
+            else if (isIdentFlag())
+                charClass = Constants.IDENT;
+            else if (isLiteralNumFlag())
+                charClass = Constants.LITERAL_NUM;
+            else {
+                if (isNoneDigit())
+                    charClass = Constants.LETTER;
+                else if (isDigit())
+                    charClass = Constants.DIGIT;
+                else
+                    charClass = Constants.UNKNOWN;
+            }
+        } catch (IOException e) {
+            System.out.println("File error");
         }
 
     }
 
-    private boolean isLiteralNumFlag(char nextChar) {
+    private boolean isLiteralNumFlag() {
         return (isDigit() || nextChar == '.');
     }
 
@@ -325,10 +278,6 @@ public class LexicalAnalyzer {
         else
             return false;
         return true;
-    }
-
-    private boolean isLiteralStringFlag() {
-        return false;
     }
 
     private void removeBlankOrNewLine() {
@@ -349,12 +298,35 @@ public class LexicalAnalyzer {
         return (nextChar == '\r' || nextChar == '\n');
     }
 
+    private boolean isValidNumericChar() {
+        return (isSign() || isFloatingSuffix() || isUnsignedSuffix() || isLongSuffix() || isExponent(true)
+                || isExponent(false) || isHexadecimalPrefix() || isBinaryPrefix() || isHexDigit());
+    }
+
     private boolean isSign() {
         return (nextChar == '+' || nextChar == '-');
     }
 
-    private boolean isExponent() {
+    private boolean isUnsignedSuffix() {
+        return (nextChar == 'u' || nextChar == 'U');
+    }
+
+    private boolean isLongSuffix() {
+        return (nextChar == 'l' || nextChar == 'L');
+    }
+
+    private boolean isExponent(boolean isHex) {
+        if (isHex)
+            return (nextChar == 'p' || nextChar == 'P');
         return (nextChar == 'e' || nextChar == 'E');
+    }
+
+    private boolean isBinaryPrefix() {
+        return (nextChar == 'b' || nextChar == 'B');
+    }
+
+    private boolean isHexadecimalPrefix() {
+        return (nextChar == 'x' || nextChar == 'X');
     }
 
     private boolean isFloatingSuffix() {
@@ -369,16 +341,28 @@ public class LexicalAnalyzer {
         return (isAlpha() || nextChar == '_');
     }
 
+    private boolean isHexDigit() {
+        return (isDigit() || (nextChar >= 'a' && nextChar <= 'f') || (nextChar >= 'A' && nextChar <= 'F'));
+    }
+
     private boolean isDigit() {
         return (isNoneZeroDigit() || nextChar == '0');
     }
 
     private boolean isNoneZeroDigit() {
-        return (nextChar >= '1' && nextChar <= '9');
+        return (isNoneZeroOctal() || nextChar == '8' || nextChar == '9');
+    }
+
+    private boolean isNoneZeroOctal() {
+        return (nextChar >= '1' && nextChar <= '7');
     }
 
     private void sendError(String message) {
-        throw new InvaliSyntaxSymbolException(message, rowNum+1, colNum);
+        throw new InvaliSyntaxSymbolException(message, rowNum + 1, colNum);
+    }
+
+    private void sendInvalidCharacterError() {
+        throw new InvaliSyntaxSymbolException("Invalid character (" + nextChar + ")", rowNum + 1, colNum);
     }
 
     public static void main(String[] args) {
