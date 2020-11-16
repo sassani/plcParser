@@ -29,19 +29,18 @@ public class LexicalAnalyzer {
         }
     }
 
+    /**
+     * A method to create next token
+     * 
+     * @return token id
+     */
     public int NextToken() {
         lexeme.setLength(0);
         removeBlankOrNewLine();
         switch (charClass) {
             /* Parse keywords */
             case Constants.LETTER:
-                addChar();
-                getChar();
-                while (charClass == Constants.LETTER || charClass == Constants.DIGIT) {
-                    addChar();
-                    getChar();
-                }
-                lookupResWord(lexeme.toString());
+                keywordTokenizer();
                 break;
             /* Parse identifiers */
             case Constants.IDENT:
@@ -59,7 +58,7 @@ public class LexicalAnalyzer {
             case Constants.LITERAL_CHR:
                 literalChrTokenizer();
                 break;
-            //
+            // check for operational characters
             case Constants.UNKNOWN:
                 lookup();
                 getChar();
@@ -71,9 +70,22 @@ public class LexicalAnalyzer {
                 break;
             default:
                 sendInvalidCharacterError();
-        } /* End of switch */
+        }
         System.out.printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
         return nextToken;
+    }
+
+    /**
+     * A method to create keywords tokens
+     */
+    private void keywordTokenizer() {
+        addChar();
+        getChar();
+        while (charClass == Constants.LETTER || charClass == Constants.DIGIT) {
+            addChar();
+            getChar();
+        }
+        lookupResWord(lexeme.toString());
     }
 
     /**
@@ -97,14 +109,13 @@ public class LexicalAnalyzer {
     }
 
     /**
-     * reference:
+     * A method to create a token for character sequence reference:
      * https://docs.microsoft.com/en-us/cpp/c-language/c-character-constants?view=msvc-160
      */
     private void literalChrTokenizer() {
         getChar();
         if (nextChar == '\\') {
             addGetChar();
-            // addChar();
             switch (nextChar) {
                 case '\\':
                     addGetChar();
@@ -151,30 +162,15 @@ public class LexicalAnalyzer {
                     nextToken = Constants.LITERAL_CHR_SCP_VRT;
                     break;
                 case '0':
-                    addGetChar();
-                    while (nextChar != '\'') {
-                        if (nextChar == '￿')// check for closing ' to avoid infinit loop
-                            sendError("Missing \' char");
-                        addGetChar();
-                    }
+                    literalChrTokenizerHelper();
                     nextToken = Constants.LITERAL_CHR_SCP_OCT;
                     break;
                 case 'x':
-                    addGetChar();
-                    while (nextChar != '\'') {
-                        if (nextChar == '￿')// check for closing ' to avoid infinit loop
-                            sendError("Missing \' char");
-                        addGetChar();
-                    }
+                    literalChrTokenizerHelper();
                     nextToken = Constants.LITERAL_CHR_SCP_HEX;
                     break;
                 case 'u':
-                    addGetChar();
-                    while (nextChar != '\'') {
-                        if (nextChar == '￿')// check for closing ' to avoid infinit loop
-                            sendError("Missing \' char");
-                        addGetChar();
-                    }
+                    literalChrTokenizerHelper();
                     nextToken = Constants.LITERAL_CHR_UNI;
                     break;
 
@@ -182,7 +178,6 @@ public class LexicalAnalyzer {
                     sendError("invalid character in scape sequenc");
                     break;
             }
-            // addGetChar();
             if (nextChar != '\'')
                 sendError("Missing \' character");
 
@@ -193,17 +188,21 @@ public class LexicalAnalyzer {
             nextToken = Constants.LITERAL_CHR_PLN;
         }
         getChar();
-
-        // getChar();
-        // removeBlankOrNewLine();
-        // if (nextChar == '+') {// check concatenation between strings
-        // getChar();
-        // removeBlankOrNewLine();
-        // if (isLiteralStringFlag())
-        // literalStrTokenizer();
-        // }
     }
 
+    private void literalChrTokenizerHelper() {
+        addGetChar();
+        while (nextChar != '\'') {
+            if (nextChar == '￿')// check for closing ' to avoid infinit loop
+                sendError("Missing \' char");
+            addGetChar();
+        }
+    }
+
+    /**
+     * A method to create string tokens refrence:
+     * https://docs.oracle.com/javase/specs/jls/se7/html/jls-18.html
+     */
     private void literalStrTokenizer() {
         getChar();
         while (nextChar != '"') {
@@ -222,6 +221,10 @@ public class LexicalAnalyzer {
         nextToken = Constants.LITERAL_STR;
     }
 
+    /**
+     * A method to create number literal tokens reference:
+     * https://docs.microsoft.com/en-us/cpp/c-language/c-constants?view=msvc-160
+     */
     private void literalNumTokenizer() {
         addGetChar();
         while (isValidNumericChar() || nextChar == '.') {// consider all valid charachters in numerical literals
@@ -231,11 +234,7 @@ public class LexicalAnalyzer {
 
     }
 
-    private void addGetChar() {
-        addChar();
-        getChar();
-    }
-
+    // a database for operational characters
     private int lookup() {
         switch (nextChar) {
             case '=':
@@ -326,6 +325,7 @@ public class LexicalAnalyzer {
         return nextToken;
     }
 
+    // a database for reserved keywords token
     private void lookupResWord(String word) {
         switch (word) {
             case "while":
@@ -349,17 +349,26 @@ public class LexicalAnalyzer {
         }
     }
 
+    // to add current charcter and get new one
+    private void addGetChar() {
+        addChar();
+        getChar();
+    }
+
+    // add current character to lexeme
     private void addChar() {
 
         lexeme.append(nextChar);
     }
 
+    // use it to check double symbol operators like ++ and --
     private void addExtraChar() {
         addChar();
         lexeme.append(nextNextChar);
         nextNextChar = '\0';
     }
 
+    // use it to check double symbol operators like ++ and --
     private void readExtraChar() {
         try {
             nextNextChar = (char) bufferedReader.read();
@@ -368,6 +377,7 @@ public class LexicalAnalyzer {
         }
     }
 
+    // read next charcter from file and labeled it with character class number
     private void getChar() {
         try {
             if (nextNextChar == '\0') {
@@ -401,6 +411,18 @@ public class LexicalAnalyzer {
 
     }
 
+    // remove spaces and new lines
+    private void removeBlankOrNewLine() {
+        while (isNewlineOrSpace()) {
+            if (isNewline()) {
+                colNum = 0;// reset to start of the line
+                rowNum++;// update current line reader
+            }
+            getChar();
+        }
+    }
+
+    // #region logical functions
     private boolean isLiteralNumFlag() {
         return (isDigit() || nextChar == '.');
     }
@@ -423,16 +445,6 @@ public class LexicalAnalyzer {
         else
             return false;
         return true;
-    }
-
-    private void removeBlankOrNewLine() {
-        while (isNewlineOrSpace()) {
-            if (isNewline()) {
-                colNum = 0;
-                rowNum++;
-            }
-            getChar();
-        }
     }
 
     private boolean isNewlineOrSpace() {
@@ -501,11 +513,14 @@ public class LexicalAnalyzer {
     private boolean isNoneZeroOctal() {
         return (nextChar >= '1' && nextChar <= '7');
     }
+    // #endregion
 
+    // general error handler method 1
     private void sendError(String message) {
         throw new InvaliSyntaxSymbolException(message, rowNum + 1, colNum);
     }
 
+    // general error handler method 2
     private void sendInvalidCharacterError() {
         throw new InvaliSyntaxSymbolException("Invalid character (" + nextChar + ")", rowNum + 1, colNum);
     }
