@@ -12,15 +12,18 @@ public class Parser {
             lex();
             switch (nextToken) {
                 case Constants.IDENT:
-                stmt();
-                break;
+                    stmt();
+                    break;
                 case Constants.WHILE_CODE:
-                whileStmt();
-                break;
-                
+                    whileStmt();
+                    break;
+                case Constants.IF_CODE:
+                    ifStmt();
+                    break;
+
                 default:
-                throw new java.lang.IllegalArgumentException("Unknown command!");
-                
+                    throw new java.lang.IllegalArgumentException("Unknown command!");
+
             }
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -43,6 +46,25 @@ public class Parser {
             throw new java.lang.IllegalArgumentException("Missing ')'");
         block();
         System.out.println("Exit <While>");
+
+    }
+
+    /**
+     * <while_stmt> --> if ‘(’ <bool_expr> ‘)’ <block>
+     */
+    private void ifStmt() {
+        System.out.println("Enter <if>");
+        lex();
+        if (nextToken != Constants.LEFT_PAREN)
+            throw new java.lang.IllegalArgumentException("Missing '('");
+        boolExpr();
+        lex();
+        if (nextToken != Constants.RIGHT_PAREN)
+            throw new java.lang.IllegalArgumentException("Missing ')'");
+        block();
+        lex();
+
+        System.out.println("Exit <if>");
 
     }
 
@@ -117,7 +139,10 @@ public class Parser {
         System.out.println("Enter <factor>");
         lex();
         /* Determine which RHS */
-        if (nextToken == Constants.IDENT || nextToken == Constants.LITERAL_INT_DEC) {
+        if (nextToken == Constants.IDENT || nextToken == Constants.LITERAL_INT_DEC
+                || nextToken == Constants.LITERAL_INT_BIN || nextToken == Constants.LITERAL_INT_OCT
+                || nextToken == Constants.LITERAL_INT_HEX || nextToken == Constants.LITERAL_FLP_DEC
+                || nextToken == Constants.LITERAL_FLP_HEX) {
             /* Get the next token */
             lex();
 
